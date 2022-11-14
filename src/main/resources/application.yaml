@@ -1,0 +1,42 @@
+server:
+  servlet:
+    context-path: /demo
+
+#数据源
+spring:
+  datasource:
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mydb
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirm-type: correlated #开启消息确认
+    publisher-returns: true #开启发送失败回退
+    listener:
+      simple:
+        acknowledge-mode: manual #消息手动确认
+        #削峰限流
+        prefetch: 1 #消费者每次从队列里取出几个消息
+        concurrency: 3 #消费者最大数量
+        max-concurrency: 10 #消费者最大数量
+        default-requeue-rejected: true #消息消费失败后，是否重新排队进入消费队列
+        #重试策略
+        retry:
+          initial-interval: 1000 #1秒后重试
+          enabled: true #启用发布重试
+          max-interval: 10000 #尝试的最大时间间隔
+          max-attempts: 3 #传递消息得最大尝试次数
+          multiplier: 1.0 #应用于先前传递重试时间间隔的乘数
+    template:
+      mandatory: true
+        #在消息没有被路由到合适队列情况下会将消息返还给消息发布者
+        #当mandatory标志位设置为true时，如果exchange根据自身类型和消息routingKey无法找到一个合适的queue存储消息，
+        # 那么broker会调用basic.return方法将消息返还给生产者;当mandatory设置为false时，
+        # 出现上述情况broker会直接将消息丢弃;通俗的讲，mandatory标志告诉broker代理服务器至少将消息route到一个队列中，
+        # 否则就将消息return给发送者;
+        #: true # 启用强制信
+
